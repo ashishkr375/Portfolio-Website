@@ -27,7 +27,7 @@ const About = () => {
           <p className="grid-subtext">
             I'm a passionate web developer and engineer with a strong enthusiasm for creating innovative software solutions.
           </p>
-          <a href='https://drive.google.com' target="_blank" rel="noopener noreferrer">
+          <a href='https://drive.google.com/file/d/13JMc3lwof9OvYwXMeBRum3tn8qQ5lJML/view?usp=drive_link' target="_blank" rel="noopener noreferrer">
           <Button name="Download Resume" isBeam containerClass="w-full mt-10" /> 
           </a>
 
@@ -66,7 +66,10 @@ const About = () => {
         <div>
           <p className="grid-headtext">I’m based in Patna, India</p>
           <p className="grid-subtext">I'm open to remote work worldwide and flexible with time zone communications.</p>
+
+          <a href="https://www.linkedin.com/in/ashish-kumar-nitp/" className="w-fit">
           <Button name="Contact Me" isBeam containerClass="w-full mt-10" />
+          </a>
         </div>
       </div>
     </div>
