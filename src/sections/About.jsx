@@ -27,6 +27,10 @@ const About = () => {
           <p className="grid-subtext">
             I'm a passionate web developer and engineer with a strong enthusiasm for creating innovative software solutions.
           </p>
+          <a href='https://drive.google.com' target="_blank" rel="noopener noreferrer">
+          <Button name="Download Resume" isBeam containerClass="w-full mt-10" /> 
+          </a>
+
         </div>
       </div>
     </div>
