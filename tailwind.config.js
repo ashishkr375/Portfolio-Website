@@ -4,29 +4,48 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        generalsans: ['General Sans', 'sans-serif'],
+        'space-grotesk': ['Space Grotesk', 'sans-serif'],
+        'generalsans': ['General Sans', 'sans-serif'],
       },
       colors: {
-        black: {
-          DEFAULT: '#000',
-          100: '#010103',
-          200: '#0E0E10',
-          300: '#1C1C21',
-          500: '#3A3A49',
-          600: '#1A1A1A',
+        primary: {
+          50: '#f5f3ff',
+          100: '#ede9fe',
+          200: '#ddd6fe',
+          300: '#c4b5fd',
+          400: '#a78bfa',
+          500: '#8b5cf6',
+          600: '#7c3aed',
+          700: '#6d28d9',
+          800: '#5b21b6',
+          900: '#4c1d95',
+          950: '#2e1065',
         },
-        white: {
-          DEFAULT: '#FFFFFF',
-          800: '#E4E4E6',
-          700: '#D6D9E9',
-          600: '#AFB0B6',
-          500: '#62646C',
+        dark: {
+          50: '#fafafa',
+          100: '#171717',
+          200: '#141414',
+          300: '#111111',
+          400: '#0a0a0a',
+          500: '#080808',
+          600: '#060606',
+          700: '#050505',
+          800: '#030303',
+          900: '#020202',
+          950: '#010101',
         },
       },
-      backgroundImage: {
-        terminal: "url('/assets/terminal.png')",
+      animation: {
+        'spin-slow': 'spin 8s linear infinite',
+        'float': 'float 3s ease-in-out infinite',
+      },
+      keyframes: {
+        float: {
+          '0%, 100%': { transform: 'translateY(0)' },
+          '50%': { transform: 'translateY(-10px)' },
+        },
       },
     },
   },
-  plugins: [],
+  plugins: [require('@tailwindcss/typography')],
 };

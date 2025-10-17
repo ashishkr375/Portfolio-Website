@@ -1,100 +1,205 @@
-import gsap from 'gsap';
-import { useGSAP } from '@gsap/react';
-import { Suspense, useState } from 'react';
-import { Canvas } from '@react-three/fiber';
-import { Center, OrbitControls } from '@react-three/drei';
-
+import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useInView } from 'react-intersection-observer';
 import { myProjects } from '../constants/index.js';
-import CanvasLoader from '../components/Loading.jsx';
-import DemoComputer from '../components/DemoComputer.jsx';
+import ProjectModal from '../components/ProjectModal';
 
 const projectCount = myProjects.length;
 
-const Projects = () => {
-  const [selectedProjectIndex, setSelectedProjectIndex] = useState(0);
-
-  const handleNavigation = (direction) => {
-    setSelectedProjectIndex((prevIndex) => {
-      if (direction === 'previous') {
-        return prevIndex === 0 ? projectCount - 1 : prevIndex - 1;
-      } else {
-        return prevIndex === projectCount - 1 ? 0 : prevIndex + 1;
-      }
-    });
-  };
-
-  useGSAP(() => {
-    gsap.fromTo(`.animatedText`, { opacity: 0 }, { opacity: 1, duration: 1, stagger: 0.2, ease: 'power2.inOut' });
-  }, [selectedProjectIndex]);
-
-  const currentProject = myProjects[selectedProjectIndex];
+const ProjectCard = ({ project, index, onClick }) => {
+  const [ref, inView] = useInView({
+    triggerOnce: true,
+    threshold: 0.1
+  });
 
   return (
-    <section className="c-space my-20">
-      <p className="head-text">My Selected Work</p>
-
-      <div className="grid lg:grid-cols-2 grid-cols-1 mt-12 gap-5 w-full">
-        <div className="flex flex-col gap-5 relative sm:p-10 py-10 px-5 shadow-2xl shadow-black-200">
-          <div className="absolute top-0 right-0">
-            <img src={currentProject.spotlight} alt="spotlight" className="w-full h-96 object-cover rounded-xl" />
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 20 }}
+      animate={inView ? { opacity: 1, y: 0 } : {}}
+      transition={{ duration: 0.6, delay: index * 0.1 }}
+      onClick={() => onClick(project)}
+      className="project-card group"
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
+    >
+      <div className="relative aspect-[16/9] overflow-hidden">
+        <img
+          src={project.thumbnail}
+          alt={project.title}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-dark-100 via-transparent to-transparent" />
+      </div>
+      
+      <div className="p-6 space-y-4">
+        <div className="flex items-start justify-between">
+          <div>
+            <h3 className="text-xl font-bold text-white mb-2">{project.title}</h3>
+            <p className="text-gray-400 line-clamp-2">{project.desc}</p>
           </div>
-
-          <div className="p-3 backdrop-filter backdrop-blur-3xl w-fit rounded-lg" style={currentProject.logoStyle}>
-            <img className="w-10 h-10 shadow-sm" src={currentProject.logo} alt="logo" />
-          </div>
-
-          <div className="flex flex-col gap-5 text-white-600 my-5">
-            <p className="text-white text-2xl font-semibold animatedText">{currentProject.title}</p>
-
-            <p className="animatedText">{currentProject.desc}</p>
-            <p className="animatedText">{currentProject.subdesc}</p>
-          </div>
-
-          <div className="flex items-center justify-between flex-wrap gap-5">
-            <div className="flex items-center gap-3">
-              {currentProject.tags.map((tag, index) => (
-                <div key={index} className="tech-logo">
-                  <img src={tag.path} alt={tag.name} />
-                </div>
-              ))}
-            </div>
-
-            <a
-              className="flex items-center gap-2 cursor-pointer text-white-600"
-              href={currentProject.href}
-              target="_blank"
-              rel="noreferrer">
-              <p>Check Live Site</p>
-              <img src="/assets/arrow-up.png" alt="arrow" className="w-3 h-3" />
-            </a>
-          </div>
-
-          <div className="flex justify-between items-center mt-7">
-            <button className="arrow-btn" onClick={() => handleNavigation('previous')}>
-              <img src="/assets/left-arrow.png" alt="left arrow" />
-            </button>
-
-            <button className="arrow-btn" onClick={() => handleNavigation('next')}>
-              <img src="/assets/right-arrow.png" alt="right arrow" className="w-4 h-4" />
-            </button>
+          <div className="p-2 bg-primary-500/10 rounded-lg">
+            <img src={project.logo} alt="logo" className="w-8 h-8" />
           </div>
         </div>
 
-        <div className="border border-black-300 bg-black-200 rounded-lg h-96 md:h-full">
-          <Canvas>
-            <ambientLight intensity={Math.PI} />
-            <directionalLight position={[10, 10, 5]} />
-            <Center>
-              <Suspense fallback={<CanvasLoader />}>
-                <group scale={2} position={[0, -3, 0]} rotation={[0, -0.1, 0]}>
-                  <DemoComputer texture={currentProject.texture} />
-                </group>
-              </Suspense>
-            </Center>
-            <OrbitControls maxPolarAngle={Math.PI / 2} enableZoom={false} />
-          </Canvas>
+        <div className="flex flex-wrap gap-2">
+          {project.tags.map((tag, idx) => (
+            <span
+              key={idx}
+              className="tech-logo"
+            >
+              <img src={tag.path} alt={tag.name} className="w-5 h-5" />
+            </span>
+          ))}
+        </div>
+
+        <div className="pt-4 flex items-center justify-between">
+          <a
+            href={project.href}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 text-primary-400 hover:text-primary-300 transition-colors"
+          >
+            View Project
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-4 w-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M14 5l7 7m0 0l-7 7m7-7H3"
+              />
+            </svg>
+          </a>
+          
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="p-2 rounded-lg bg-primary-500/10 hover:bg-primary-500/20 transition-colors"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5 text-primary-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+              />
+            </svg>
+          </motion.button>
         </div>
       </div>
+    </motion.div>
+  );
+};
+
+const Projects = () => {
+  const [ref, inView] = useInView({
+    triggerOnce: true,
+    threshold: 0.1
+  });
+  const [selectedProject, setSelectedProject] = useState(null);
+  const [visibleCount, setVisibleCount] = useState(6); // Default show 6 on desktop
+  
+  // Determine how many to show based on screen size
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const initialCount = isMobile ? 3 : 6;
+  const loadMoreCount = 3;
+  
+  const handleProjectClick = (project) => {
+    setSelectedProject(project);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedProject(null);
+  };
+
+  const handleLoadMore = () => {
+    setVisibleCount(prev => prev + loadMoreCount);
+  };
+
+  const visibleProjects = myProjects.slice(0, visibleCount);
+  const hasMore = visibleCount < myProjects.length;
+
+  return (
+    <section className="py-20" id="projects">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div
+          ref={ref}
+          initial={{ opacity: 0, y: 20 }}
+          animate={inView ? { opacity: 1, y: 0 } : {}}
+          className="text-center mb-16"
+        >
+          <h2 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-primary-200 to-primary-400 bg-clip-text text-transparent mb-4">
+            Featured Projects
+          </h2>
+          <p className="text-gray-400 max-w-2xl mx-auto">
+            A collection of projects that showcase my skills in web development, design, and problem-solving.
+          </p>
+        </motion.div>
+
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {visibleProjects.map((project, index) => (
+            <ProjectCard
+              key={project.title}
+              project={project}
+              index={index}
+              onClick={handleProjectClick}
+            />
+          ))}
+        </div>
+
+        {/* View More Button */}
+        {hasMore && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="flex justify-center mt-12"
+          >
+            <button
+              onClick={handleLoadMore}
+              className="px-8 py-3 bg-primary-500/10 hover:bg-primary-500/20 text-primary-400 rounded-lg font-medium transition-all duration-300 flex items-center gap-2 group"
+            >
+              View More Projects
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 group-hover:translate-y-1 transition-transform"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </button>
+          </motion.div>
+        )}
+
+        <ProjectModal
+          project={selectedProject}
+          isOpen={selectedProject !== null}
+          onClose={handleCloseModal}
+        />
+      </div>
+
+      {/* Background Elements */}
+      <div className="absolute top-1/4 -left-12 w-24 h-24 bg-primary-500/10 rounded-full blur-xl" />
+      <div className="absolute bottom-1/4 -right-12 w-32 h-32 bg-primary-500/10 rounded-full blur-xl" />
     </section>
   );
 };
