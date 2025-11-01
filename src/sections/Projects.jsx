@@ -38,8 +38,8 @@ const ProjectCard = ({ project, index, onClick }) => {
             <h3 className="text-xl font-bold text-white mb-2">{project.title}</h3>
             <p className="text-gray-400 line-clamp-2">{project.desc}</p>
           </div>
-          <div className="p-2 bg-primary-500/10 rounded-lg">
-            <img src={project.logo} alt="logo" className="w-8 h-8" />
+          <div className="p-2 bg-primary-500/10 rounded-lg flex-shrink-0">
+            <img src={project.logo} alt="logo" className="w-8 h-8 object-contain" />
           </div>
         </div>
 

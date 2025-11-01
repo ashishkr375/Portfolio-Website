@@ -122,22 +122,22 @@ export const myProjects = [
       {
         id: 1,
         name: 'Next.js',
-        path: '/assets/next.jpg',
+        path: '/assets/nextjs.svg',
       },
       {
         id: 2,
         name: 'NextAuth.js',
-        path: '/assets/next.jpg',
+        path: '/assets/next.svg',
       },
       {
         id: 3,
         name: 'MySQL',
-        path: '/assets/mysql.png',
+        path: '/assets/mysql.svg',
       },
       {
         id: 4,
         name: 'Tailwind CSS',
-        path: '/assets/tailwindcss.png',
+        path: '/assets/tailwind.svg',
       },
     ],
     
@@ -194,7 +194,7 @@ export const myProjects = [
       // Add more images as needed
     ],
     thumbnail: 'https://i.postimg.cc/HL0LWtnd/Screenshot-2025-10-18-010636.png', // Card thumbnail image
-    logo: '/assets/project-logo1.png', // Project logo
+    logo: '/assets/project-logo2.png', // Project logo
     
     // Styling for logo
     logoStyle: {
@@ -208,17 +208,17 @@ export const myProjects = [
       {
         id: 1,
         name: 'Next.js',
-        path: '/assets/next.jpg',
+        path: '/assets/nextjs.svg',
       },
       {
         id: 2,
         name: 'TypeScript',
-        path: '/assets/ts.jpg',
+        path: '/assets/typescript.svg',
       },
       {
         id: 3,
         name: 'Tailwind CSS',
-        path: '/assets/tailwindcss.png',
+        path: '/assets/tailwind.svg',
       },
       {
         id: 4,
@@ -255,6 +255,129 @@ export const myProjects = [
       'User and file management system'
     ],
   },
+  {
+  title: 'Quick News Briefs',
+  desc: 'An intelligent, AI-powered news aggregation platform that delivers personalized, concise news summaries through an engaging swipe-based interface. Features Google Gemini AI integration for smart summarization, text-to-speech capabilities, and location-based news filtering.',
+  subdesc: 'Built with modern React and TypeScript, featuring real-time news aggregation from multiple sources, customizable interest tracking, and an intuitive card-swipe interface for seamless news consumption.',
+  
+  // Links Section
+  liveDemo: 'https://news.ashishk.online/', // Your deployment URL
+  github: 'https://github.com/ashishkr375/quick-news-briefs', // Your GitHub repo
+  documentation: '', // Add if you create docs
+  presentation: '', // Add if you have slides
+  
+  // Media Section
+  images: [
+    'https://i.postimg.cc/fT9rrRts/Screenshot-2025-11-01-115607.png',
+    'https://i.postimg.cc/YqWssCGw/Screenshot-2025-11-01-115621.png',
+    'https://i.postimg.cc/3Jvccxy6/Screenshot-2025-11-01-115629.png',
+    'https://i.postimg.cc/KvMHH8KW/Screenshot-2025-11-01-115639.png',
+    'https://i.postimg.cc/7Y2WWZCW/Screenshot-2025-11-01-115700.png',
+    'https://i.postimg.cc/sf8LmhXy/Screenshot-2025-11-01-115706.png',
+    'https://i.postimg.cc/dQXf6y05/Screenshot-2025-11-01-115718.png'
+
+  ],
+  thumbnail: 'https://i.postimg.cc/fT9rrRts/Screenshot-2025-11-01-115607.png', // Card thumbnail image
+  logo: '/assets/news-app.png', // Project logo (can use a news icon)
+  
+  // Styling for logo
+  logoStyle: {
+    backgroundColor: '#0E7490',
+    border: '0.2px solid #06B6D4',
+    boxShadow: '0px 0px 60px 0px rgba(6, 182, 212, 0.3)',
+  },
+  
+  // Technologies used
+  tags: [
+    {
+      id: 1,
+      name: 'React.js',
+      path: '/assets/react.svg',
+    },
+    {
+      id: 2,
+      name: 'TypeScript',
+      path: '/assets/typescript.svg',
+    },
+    {
+      id: 3,
+      name: 'Vite',
+      path: '/assets/vite.svg',
+    },
+    {
+      id: 4,
+      name: 'Google Gemini AI',
+      path: '/assets/gemini.svg',
+    },
+    {
+      id: 5,
+      name: 'Tailwind CSS',
+      path: '/assets/tailwind.svg',
+    },
+    {
+      id: 6,
+      name: 'NewsAPI',
+      path: '/assets/newsapi.svg',
+    },
+  ],
+  
+  // Additional project details
+  category: 'AI-Powered Web Application',
+  duration: '2 Weeks',
+  teamSize: 'Solo Project',
+  role: 'Full Stack Developer & UI/UX Designer',
+  status: 'Completed',
+  featured: true,
+  
+  // Achievement/Recognition
+  achievements: [
+    'AI-powered summarization reducing reading time by 70%',
+    'Intuitive swipe-based UX with smooth animations',
+    'Multi-source news aggregation with real-time updates',
+    'Accessible text-to-speech with voice customization'
+  ],
+  
+  // Key features
+  features: [
+    'AI-powered news summarization using Google Gemini',
+    'Tinder-style swipe interface for news browsing',
+    'Text-to-speech with adjustable voice and speed',
+    'Dark/Light mode with smooth transitions',
+    'Location-based news filtering',
+    'Personalized interest management',
+    'Multi-category news (Technology, Sports, Business, etc.)',
+    'Mobile-responsive with touch gesture support',
+    'Share functionality for social media',
+    'Beautiful glass-morphism UI design'
+  ],
+  
+  // Technical Highlights (optional)
+  technicalHighlights: [
+    'Implemented efficient drag gesture handling for swipe mechanics',
+    'Integrated Google Gemini AI for intelligent content summarization',
+    'Built custom voice synthesis controls with Web Speech API',
+    'Optimized performance with React hooks and memoization',
+    'Designed modern UI with Tailwind CSS and custom animations',
+    'Implemented geolocation-based content filtering',
+    'Created reusable TypeScript components with strict typing'
+  ],
+  
+  // Challenges & Solutions (optional)
+  challenges: [
+    {
+      challenge: 'Efficient news summarization',
+      solution: 'Integrated Google Gemini AI API for accurate, concise summaries'
+    },
+    {
+      challenge: 'Smooth swipe animations',
+      solution: 'Implemented custom drag handlers with optimized transforms'
+    },
+    {
+      challenge: 'Multi-source aggregation',
+      solution: 'Built robust service layer for NewsAPI integration'
+    }
+  ],
+},
   {
     title: 'Multi-Channel E-Commerce Fulfillment Hub',
     desc: 'A comprehensive full-stack platform designed to manage multiple e-commerce stores (Shopify, WooCommerce, Amazon) with integrated inventory, order, and shipment processes. Currently integrated with Shopify API, with planned expansion for MCF API and multi-platform support.',
