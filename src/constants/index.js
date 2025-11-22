@@ -182,18 +182,18 @@ export const myProjects = [
     
     // Media Section
     images: [
-'https://i.postimg.cc/HL0LWtnd/Screenshot-2025-10-18-010636.png',
-'https://i.postimg.cc/cJ7J1cCS/Screenshot-2025-10-18-010702.png',
-'https://i.postimg.cc/5t5t9myM/Screenshot-2025-10-18-010708.png',
-'https://i.postimg.cc/VN9NsF6D/Screenshot-2025-10-18-010716.png',
-'https://i.postimg.cc/MG0GZYT3/Screenshot-2025-10-18-010729.png',
-'https://i.postimg.cc/0NGN5CQt/Screenshot-2025-10-18-010757.png',
-'https://i.postimg.cc/5t5t9m0s/Screenshot-2025-10-18-010805.png',
-'https://i.postimg.cc/pdMTtS2f/Screenshot-2025-10-18-011154.png',
+'https://i.postimg.cc/MKt7K11v/image.png',
+'https://i.postimg.cc/3RShxSrV/image.png',
+'https://i.postimg.cc/pLT62W5v/image.png',
+'https://i.postimg.cc/dtD23Lnc/image.png',
+'https://i.postimg.cc/tR8319cZ/image.png',
+'https://i.postimg.cc/4dmcd0bc/image.png',
+'https://i.postimg.cc/sgmGJzT3/image.png',
+'https://i.postimg.cc/xCwXd11M/image.png',
 
       // Add more images as needed
     ],
-    thumbnail: 'https://i.postimg.cc/HL0LWtnd/Screenshot-2025-10-18-010636.png', // Card thumbnail image
+    thumbnail: 'https://i.postimg.cc/MKt7K11v/image.png', // Card thumbnail image
     logo: '/assets/project-logo2.png', // Project logo
     
     // Styling for logo
