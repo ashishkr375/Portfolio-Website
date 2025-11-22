@@ -1,661 +1,284 @@
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion';
+
+// --- 1. CSS STYLES FOR SCROLLBAR & FIRE EFFECT ---
+const customStyles = `
+  /* Industrial Orange Scrollbar */
+  .industrial-scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .industrial-scrollbar::-webkit-scrollbar-track {
+    background: #0a0a0a;
+    border-left: 1px solid #222;
+  }
+  .industrial-scrollbar::-webkit-scrollbar-thumb {
+    background: #f97316; /* Orange-500 */
+    border-radius: 0px;
+  }
+  .industrial-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #ea580c; /* Orange-600 */
+  }
+
+  /* Fire/Magma Text Animation */
+  @keyframes magma-flow {
+    0% { text-shadow: 0 0 2px #f97316, 0 0 5px #dc2626; color: #fff7ed; }
+    50% { text-shadow: 0 0 5px #f97316, 0 0 10px #ea580c; color: #ffedd5; }
+    100% { text-shadow: 0 0 2px #f97316, 0 0 5px #dc2626; color: #fff7ed; }
+  }
+  .fire-text {
+    animation: magma-flow 2s infinite ease-in-out;
+    font-weight: 800;
+    display: inline-block;
+  }
+`;
+
+// --- 2. HELPER TO HIGHLIGHT NUMBERS ---
+const FireText = ({ text }) => {
+  const parts = text.split(/(\d+(?:,\d+)*(?:\.\d+)?%?(?:\+)?)/g);
+  return (
+    <span>
+      {parts.map((part, i) => {
+        if (/^\d+(?:,\d+)*(?:\.\d+)?%?(?:\+)?$/.test(part)) {
+          return <span key={i} className="fire-text mx-0.5">{part}</span>;
+        }
+        return part;
+      })}
+    </span>
+  );
+};
 
 const ProjectModal = ({ project, isOpen, onClose }) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const images = project?.images || [project?.texture];
+  const images = project?.images || [project?.thumbnail];
 
-  // Handle manual image navigation
-  const goToPrevious = () => {
-    setCurrentImageIndex((prev) => (prev === 0 ? images.length - 1 : prev - 1));
-  };
-
-  const goToNext = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % images.length);
-  };
-
-  const goToImage = (index) => {
-    setCurrentImageIndex(index);
-  };
-
+  // Reset index on open
   useEffect(() => {
-    if (isOpen && images.length > 1) {
-      const timer = setInterval(() => {
-        setCurrentImageIndex((prev) => (prev + 1) % images.length);
-      }, 2000);
-      return () => clearInterval(timer);
-    }
-  }, [isOpen, images.length]);
+    if (isOpen) setCurrentImageIndex(0);
+  }, [isOpen]);
 
+  // --- FIX: AGGRESSIVE SCROLL LOCKING ---
   useEffect(() => {
     if (isOpen) {
+      // 1. Lock both body and html to prevent background scroll
       document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden'; 
       
-      // Add custom scrollbar styles and responsive mobile styles
-      const style = document.createElement('style');
-      style.id = 'modal-scrollbar-style';
-      style.innerHTML = `
-        .modal-scroll-content::-webkit-scrollbar {
-          width: 8px;
-        }
-        .modal-scroll-content::-webkit-scrollbar-track {
-          background: rgba(255, 255, 255, 0.05);
-          border-radius: 4px;
-        }
-        .modal-scroll-content::-webkit-scrollbar-thumb {
-          background: rgba(59, 130, 246, 0.5);
-          border-radius: 4px;
-        }
-        .modal-scroll-content::-webkit-scrollbar-thumb:hover {
-          background: rgba(59, 130, 246, 0.7);
-        }
-        
-        /* Hide scrollbar for thumbnail container */
-        .thumbnail-container::-webkit-scrollbar {
-          display: none;
-        }
-        
-        /* Mobile responsive styles */
-        @media (max-width: 768px) {
-          .modal-content {
-            max-height: 95vh !important;
-            width: 95vw !important;
-          }
-          .modal-wrapper {
-            flex-direction: column !important;
-            height: auto !important;
-          }
-          .modal-image-section {
-            width: 100% !important;
-            min-height: 250px !important;
-            max-height: 250px !important;
-            flex-shrink: 0 !important;
-          }
-          .modal-scroll-content {
-            width: 100% !important;
-            max-height: calc(95vh - 250px) !important;
-            padding: 20px !important;
-          }
-        }
-      `;
-      document.head.appendChild(style);
-      
+      // 2. Inject Styles
+      const styleSheet = document.createElement("style");
+      styleSheet.innerText = customStyles;
+      document.head.appendChild(styleSheet);
+
       return () => {
+        // Cleanup
         document.body.style.overflow = '';
-        const styleElement = document.getElementById('modal-scrollbar-style');
-        if (styleElement) {
-          styleElement.remove();
-        }
+        document.documentElement.style.overflow = ''; 
+        document.head.removeChild(styleSheet);
       };
     }
   }, [isOpen]);
 
-  if (!project || !isOpen) return null;
+  if (!isOpen || !project) return null;
+
+  const handleNext = (e) => {
+    e.stopPropagation();
+    setCurrentImageIndex((prev) => (prev + 1) % images.length);
+  };
+
+  const handlePrev = (e) => {
+    e.stopPropagation();
+    setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
 
   const modalContent = (
-    <>
-      {/* Backdrop */}
-      <div
-        className="modal-overlay"
-        onClick={onClose}
-        onWheel={(e) => e.preventDefault()}
-        style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: 'rgba(0, 0, 0, 0.85)',
-          zIndex: 9998,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '20px'
-        }}
-      >
-        {/* Modal Content */}
-        <div
-          className="modal-content"
-          onClick={(e) => e.stopPropagation()}
-          onWheel={(e) => e.stopPropagation()}
-          style={{
-            backgroundColor: '#1a1a1a',
-            borderRadius: '12px',
-            padding: '0',
-            maxWidth: '1200px',
-            width: '90vw',
-            maxHeight: '85vh',
-            overflow: 'hidden',
-            position: 'relative',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)'
-          }}
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          // z-[9999] ensures it is on top of everything
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/90 backdrop-blur-sm p-0 md:p-6"
+          // Stop clicks from closing modal immediately, but allow background click
+          onClick={onClose}
         >
-          {/* Close Button */}
-          <button
-            onClick={onClose}
-            style={{
-              position: 'absolute',
-              top: '15px',
-              right: '15px',
-              background: 'rgba(255, 255, 255, 0.1)',
-              border: 'none',
-              borderRadius: '50%',
-              width: '40px',
-              height: '40px',
-              color: 'white',
-              fontSize: '20px',
-              cursor: 'pointer',
-              zIndex: 10001,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
+          {/* Modal Container */}
+          <motion.div
+            initial={{ scale: 0.95, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.95, opacity: 0 }}
+            onClick={(e) => e.stopPropagation()}
+            className="bg-[#0f0f0f] w-full h-full md:h-[85vh] md:max-w-7xl border border-white/10 flex flex-col md:flex-row shadow-2xl relative group overflow-hidden"
           >
-            ×
-          </button>
-
-          <div className="modal-wrapper" style={{ display: 'flex', flexDirection: 'row', height: '100%' }}>
-            {/* Image Section */}
-            <div 
-              className="modal-image-section"
-              style={{ 
-                width: '50%', 
-                position: 'relative', 
-                backgroundColor: '#000',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minHeight: '400px'
-              }}
+            {/* Close Button */}
+            <button
+              onClick={onClose}
+              className="absolute top-4 right-4 z-50 w-10 h-10 bg-black/80 border border-white/10 text-white flex items-center justify-center hover:bg-red-600 hover:border-red-600 transition-colors"
             >
-              {/* Image Counter */}
-              <div style={{
-                position: 'absolute',
-                top: '15px',
-                left: '15px',
-                backgroundColor: 'rgba(0, 0, 0, 0.7)',
-                color: 'white',
-                padding: '4px 10px',
-                borderRadius: '12px',
-                fontSize: '12px',
-                fontWeight: '500',
-                zIndex: 10
-              }}>
-                {currentImageIndex + 1}/{images.length}
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="square" strokeLinejoin="miter" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {/* ================= LEFT: IMAGE GALLERY ================= */}
+            <div className="w-full md:w-[55%] lg:w-[60%] bg-black relative flex flex-col h-[40vh] md:h-full border-b md:border-b-0 md:border-r border-white/10">
+              
+              {/* Main Image Area */}
+              <div className="flex-1 relative flex items-center justify-center bg-[#050505] overflow-hidden">
+                <AnimatePresence mode='wait'>
+                  <motion.img
+                    key={currentImageIndex}
+                    src={images[currentImageIndex]}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    alt="Project Preview"
+                    className="max-h-full max-w-full object-contain p-2 md:p-8"
+                  />
+                </AnimatePresence>
+
+                {/* Navigation Arrows */}
+                {images.length > 1 && (
+                  <>
+                    <button onClick={handlePrev} className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 border border-white/10 text-white flex items-center justify-center hover:bg-orange-500 hover:text-black hover:border-orange-500 transition-colors">
+                      &lt;
+                    </button>
+                    <button onClick={handleNext} className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/50 border border-white/10 text-white flex items-center justify-center hover:bg-orange-500 hover:text-black hover:border-orange-500 transition-colors">
+                      &gt;
+                    </button>
+                  </>
+                )}
+
+                {/* Counter Badge */}
+                <div className="absolute bottom-4 left-4 bg-black/80 border border-white/10 px-3 py-1 text-[10px] font-mono text-orange-500">
+                   FILE: {String(currentImageIndex + 1).padStart(2, '0')} / {String(images.length).padStart(2, '0')}
+                </div>
               </div>
 
-              {/* Previous Button */}
+              {/* Thumbnails */}
               {images.length > 1 && (
-                <button
-                  onClick={goToPrevious}
-                  style={{
-                    position: 'absolute',
-                    left: '15px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    background: 'rgba(255, 255, 255, 0.2)',
-                    border: 'none',
-                    borderRadius: '50%',
-                    width: '36px',
-                    height: '36px',
-                    color: 'white',
-                    fontSize: '18px',
-                    cursor: 'pointer',
-                    zIndex: 10,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'background 0.3s'
-                  }}
-                  onMouseEnter={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.3)'}
-                  onMouseLeave={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.2)'}
-                >
-                  ‹
-                </button>
-              )}
-
-              {/* Next Button */}
-              {images.length > 1 && (
-                <button
-                  onClick={goToNext}
-                  style={{
-                    position: 'absolute',
-                    right: '15px',
-                    top: '50%',
-                    transform: 'translateY(-50%)',
-                    background: 'rgba(255, 255, 255, 0.2)',
-                    border: 'none',
-                    borderRadius: '50%',
-                    width: '36px',
-                    height: '36px',
-                    color: 'white',
-                    fontSize: '18px',
-                    cursor: 'pointer',
-                    zIndex: 10,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transition: 'background 0.3s'
-                  }}
-                  onMouseEnter={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.3)'}
-                  onMouseLeave={(e) => e.target.style.background = 'rgba(255, 255, 255, 0.2)'}
-                >
-                  ›
-                </button>
-              )}
-
-              {/* Main Image Display */}
-              <div style={{ flex: 1, width: '100%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {images.map((image, index) => (
-                  <div
-                    key={index}
-                    style={{
-                      position: 'absolute',
-                      inset: 0,
-                      opacity: index === currentImageIndex ? 1 : 0,
-                      transition: 'opacity 0.5s ease',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      padding: '20px'
-                    }}
-                  >
-                    {image.endsWith('.mp4') ? (
-                      <video
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                        style={{
-                          maxWidth: '100%',
-                          maxHeight: '100%',
-                          objectFit: 'contain'
-                        }}
-                        src={image}
-                      />
-                    ) : (
-                      <img
-                        src={image}
-                        alt={`Project screenshot ${index + 1}`}
-                        style={{
-                          maxWidth: '100%',
-                          maxHeight: '100%',
-                          objectFit: 'contain'
-                        }}
-                      />
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {/* Thumbnail Navigation */}
-              {images.length > 1 && (
-                <div style={{
-                  width: '100%',
-                  padding: '10px',
-                  backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                  display: 'flex',
-                  gap: '8px',
-                  overflowX: 'auto',
-                  overflowY: 'hidden',
-                  scrollBehavior: 'smooth',
-                  WebkitOverflowScrolling: 'touch',
-                  scrollbarWidth: 'none',
-                  msOverflowStyle: 'none'
-                }}
-                className="thumbnail-container"
-                >
-                  {images.map((image, index) => (
-                    <div
-                      key={index}
-                      onClick={() => goToImage(index)}
-                      style={{
-                        minWidth: '60px',
-                        height: '45px',
-                        borderRadius: '4px',
-                        overflow: 'hidden',
-                        cursor: 'pointer',
-                        border: index === currentImageIndex ? '2px solid #3b82f6' : '2px solid rgba(255, 255, 255, 0.2)',
-                        opacity: 1,
-                        transition: 'all 0.3s',
-                        flexShrink: 0,
-                        backgroundColor: '#000'
-                      }}
-                      onMouseEnter={(e) => {
-                        if (index !== currentImageIndex) {
-                          e.currentTarget.style.transform = 'scale(1.05)';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        e.currentTarget.style.transform = 'scale(1)';
-                      }}
+                <div className="hidden md:flex h-24 bg-[#0a0a0a] border-t border-white/10 items-center gap-2 overflow-x-auto p-3 industrial-scrollbar">
+                  {images.map((img, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => setCurrentImageIndex(idx)}
+                      className={`shrink-0 h-full aspect-video border-2 relative ${currentImageIndex === idx ? 'border-orange-500 opacity-100' : 'border-transparent opacity-40 hover:opacity-80'} transition-all`}
                     >
-                      {image.endsWith('.mp4') ? (
-                        <video
-                          muted
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover'
-                          }}
-                          src={image}
-                        />
-                      ) : (
-                        <img
-                          src={image}
-                          alt={`Thumbnail ${index + 1}`}
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover'
-                          }}
-                        />
+                      <img src={img} alt="" className="w-full h-full object-cover" />
+                      {currentImageIndex === idx && (
+                         <div className="absolute inset-0 bg-orange-500/10 animate-pulse"></div>
                       )}
-                    </div>
+                    </button>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* Content Section */}
-            <div 
-              className="modal-scroll-content"
-              style={{ 
-                width: '50%', 
-                padding: '30px',
-                overflowY: 'auto',
-                maxHeight: '85vh',
-                overflowX: 'hidden',
-                scrollBehavior: 'smooth'
-              }}
-            >
-              <h2 style={{ 
-                color: 'white', 
-                fontSize: '24px', 
-                fontWeight: 'bold', 
-                marginBottom: '16px',
-                marginTop: '0'
-              }}>
-                {project.title}
-              </h2>
-
-              <p style={{ 
-                color: '#d1d5db', 
-                fontSize: '16px', 
-                lineHeight: '1.6',
-                marginBottom: '16px'
-              }}>
-                {project.desc}
-              </p>
-
-              {project.subdesc && (
-                <p style={{ 
-                  color: '#9ca3af', 
-                  fontSize: '14px',
-                  marginBottom: '20px'
-                }}>
-                  {project.subdesc}
-                </p>
-              )}
-
-              {/* Tech Tags */}
-              <div style={{ 
-                display: 'flex', 
-                flexWrap: 'wrap', 
-                gap: '8px',
-                marginBottom: '24px'
-              }}>
-                {project.tags.map((tag) => (
-                  <div
-                    key={tag.id}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                      padding: '6px 12px',
-                      borderRadius: '20px',
-                      border: '1px solid rgba(59, 130, 246, 0.2)'
-                    }}
-                  >
-                    <img
-                      src={tag.path}
-                      alt={tag.name}
-                      style={{ width: '16px', height: '16px', borderRadius: '50%' }}
-                    />
-                    <span style={{ color: '#d1d5db', fontSize: '12px' }}>
-                      {tag.name}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Project Details Grid */}
-              {(project.category || project.duration || project.teamSize || project.role || project.status) && (
-                <div style={{
-                  backgroundColor: 'rgba(59, 130, 246, 0.05)',
-                  borderRadius: '8px',
-                  padding: '16px',
-                  marginBottom: '24px',
-                  border: '1px solid rgba(59, 130, 246, 0.1)'
-                }}>
-                  <h3 style={{
-                    color: '#3b82f6',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    marginBottom: '12px',
-                    marginTop: '0',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px'
-                  }}>
-                    Project Details
-                  </h3>
-                  <div style={{
-                    display: 'grid',
-                    gridTemplateColumns: 'repeat(2, 1fr)',
-                    gap: '12px'
-                  }}>
-                    {project.category && (
-                      <div>
-                        <p style={{ color: '#9ca3af', fontSize: '12px', margin: '0 0 4px 0' }}>Category</p>
-                        <p style={{ color: '#d1d5db', fontSize: '14px', margin: '0', fontWeight: '500' }}>{project.category}</p>
-                      </div>
-                    )}
-                    {project.status && (
-                      <div>
-                        <p style={{ color: '#9ca3af', fontSize: '12px', margin: '0 0 4px 0' }}>Status</p>
-                        <p style={{ 
-                          color: project.status === 'Completed' ? '#10b981' : '#fbbf24', 
-                          fontSize: '14px', 
-                          margin: '0', 
-                          fontWeight: '500' 
-                        }}>{project.status}</p>
-                      </div>
-                    )}
-                    {project.role && (
-                      <div>
-                        <p style={{ color: '#9ca3af', fontSize: '12px', margin: '0 0 4px 0' }}>Role</p>
-                        <p style={{ color: '#d1d5db', fontSize: '14px', margin: '0', fontWeight: '500' }}>{project.role}</p>
-                      </div>
-                    )}
-                    {project.duration && (
-                      <div>
-                        <p style={{ color: '#9ca3af', fontSize: '12px', margin: '0 0 4px 0' }}>Duration</p>
-                        <p style={{ color: '#d1d5db', fontSize: '14px', margin: '0', fontWeight: '500' }}>{project.duration}</p>
-                      </div>
-                    )}
-                    {project.teamSize && (
-                      <div>
-                        <p style={{ color: '#9ca3af', fontSize: '12px', margin: '0 0 4px 0' }}>Team Size</p>
-                        <p style={{ color: '#d1d5db', fontSize: '14px', margin: '0', fontWeight: '500' }}>{project.teamSize}</p>
-                      </div>
+            {/* ================= RIGHT: SCROLLABLE CONTENT ================= */}
+            <div className="flex-1 flex flex-col w-full md:w-[45%] lg:w-[40%] bg-[#0f0f0f] h-[60vh] md:h-full overflow-hidden">
+              
+              {/* 
+                 FIX: overscroll-contain
+                 This prevents the scroll event from bubbling up to the body 
+                 when you reach the top/bottom of this container.
+              */}
+              <div 
+                className="flex-1 overflow-y-auto industrial-scrollbar overscroll-contain p-6 md:p-10 space-y-8"
+                onWheel={(e) => e.stopPropagation()} // Extra safety measure
+              >
+                
+                {/* Header */}
+                <div>
+                   <div className="flex items-center gap-2 mb-3">
+                      <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
+                      <span className="text-[10px] font-mono text-orange-500 uppercase tracking-widest">Project_Details</span>
+                   </div>
+                  <h2 className="text-2xl md:text-4xl font-bold text-white uppercase tracking-tight mb-4 leading-none">
+                    {project.title}
+                  </h2>
+                  
+                  <div className="text-gray-300 text-sm md:text-base leading-relaxed border-l-2 border-orange-500/30 pl-5 py-1">
+                    <FireText text={project.desc} />
+                    {project.subdesc && (
+                       <div className="mt-4 text-gray-500 text-sm font-light">
+                          {project.subdesc}
+                       </div>
                     )}
                   </div>
                 </div>
-              )}
 
-              {/* Achievements Section */}
-              {project.achievements && project.achievements.length > 0 && (
-                <div style={{
-                  backgroundColor: 'rgba(16, 185, 129, 0.05)',
-                  borderRadius: '8px',
-                  padding: '16px',
-                  marginBottom: '24px',
-                  border: '1px solid rgba(16, 185, 129, 0.2)'
-                }}>
-                  <h3 style={{
-                    color: '#10b981',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    marginBottom: '12px',
-                    marginTop: '0',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}>
-                    <span>🏆</span> Achievements
-                  </h3>
-                  <ul style={{
-                    margin: '0',
-                    paddingLeft: '20px',
-                    color: '#d1d5db',
-                    fontSize: '14px',
-                    lineHeight: '1.8'
-                  }}>
-                    {project.achievements.map((achievement, index) => (
-                      <li key={index} style={{ marginBottom: '6px' }}>{achievement}</li>
-                    ))}
-                  </ul>
+                {/* Buttons */}
+                <div className="flex flex-wrap gap-4 py-4 border-t border-b border-white/5">
+                  {project.liveDemo && (
+                    <a href={project.liveDemo} target="_blank" rel="noreferrer" className="flex-1 py-3 bg-white text-black text-xs font-bold uppercase tracking-wider text-center hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
+                      Live_Link
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="square" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                    </a>
+                  )}
+                  {project.github && (
+                    <a href={project.github} target="_blank" rel="noreferrer" className="flex-1 py-3 border border-white/20 text-white text-xs font-bold uppercase tracking-wider text-center hover:bg-orange-500 hover:border-orange-500 hover:text-black transition-colors flex items-center justify-center gap-2">
+                      GitHub_Repo
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                    </a>
+                  )}
                 </div>
-              )}
 
-              {/* Key Features Section */}
-              {project.features && project.features.length > 0 && (
-                <div style={{
-                  backgroundColor: 'rgba(139, 92, 246, 0.05)',
-                  borderRadius: '8px',
-                  padding: '16px',
-                  marginBottom: '24px',
-                  border: '1px solid rgba(139, 92, 246, 0.2)'
-                }}>
-                  <h3 style={{
-                    color: '#8b5cf6',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    marginBottom: '12px',
-                    marginTop: '0',
-                    textTransform: 'uppercase',
-                    letterSpacing: '0.5px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}>
-                    <span>✨</span> Key Features
-                  </h3>
-                  <ul style={{
-                    margin: '0',
-                    paddingLeft: '20px',
-                    color: '#d1d5db',
-                    fontSize: '14px',
-                    lineHeight: '1.8'
-                  }}>
-                    {project.features.map((feature, index) => (
-                      <li key={index} style={{ marginBottom: '6px' }}>{feature}</li>
+                {/* Tech Stack */}
+                <div>
+                  <h3 className="text-[10px] font-mono text-gray-500 uppercase mb-3">Tech_Stack_Used</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {project.tags.map((tag, i) => (
+                      <div key={i} className="flex items-center gap-2 bg-[#1a1a1a] border border-white/10 px-3 py-2 hover:border-orange-500/50 transition-colors">
+                        <img src={tag.path} alt="" className="w-4 h-4" />
+                        <span className="text-[10px] text-gray-300 font-mono uppercase tracking-wider">{tag.name}</span>
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 </div>
-              )}
 
-              {/* Action Buttons */}
-              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                {project.liveDemo && (
-                  <a
-                    href={project.liveDemo}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      backgroundColor: '#3b82f6',
-                      color: 'white',
-                      padding: '10px 20px',
-                      borderRadius: '6px',
-                      textDecoration: 'none',
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      border: 'none',
-                      cursor: 'pointer',
-                      transition: 'background-color 0.3s'
-                    }}
-                    onMouseEnter={(e) => e.target.style.backgroundColor = '#2563eb'}
-                    onMouseLeave={(e) => e.target.style.backgroundColor = '#3b82f6'}
-                  >
-                    🚀 Live Demo
-                  </a>
-                )}
-                {project.github && (
-                  <a
-                    href={project.github}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    style={{
-                      backgroundColor: 'transparent',
-                      color: '#3b82f6',
-                      padding: '10px 20px',
-                      borderRadius: '6px',
-                      textDecoration: 'none',
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      border: '1px solid #3b82f6',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.backgroundColor = '#3b82f6';
-                      e.target.style.color = 'white';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.backgroundColor = 'transparent';
-                      e.target.style.color = '#3b82f6';
-                    }}
-                  >
-                    💻 GitHub
-                  </a>
+                {/* Meta Data Grid */}
+                <div className="grid grid-cols-2 gap-6 border-t border-white/5 pt-6">
+                  <MetaItem label="Category" value={project.category} />
+                  <MetaItem label="Status" value={project.status} isStatus />
+                  <MetaItem label="Role" value={project.role} />
+                  <MetaItem label="Timeline" value={project.duration} />
+                </div>
+                
+                {/* Features List */}
+                {project.features && (
+                   <div className="pt-2">
+                      <h3 className="text-[10px] font-mono text-gray-500 uppercase mb-3">Key_Features</h3>
+                      <ul className="space-y-2">
+                         {project.features.map((feat, i) => (
+                            <li key={i} className="text-xs text-gray-400 font-mono flex items-start gap-3">
+                               <span className="text-orange-500">>></span>
+                               {feat}
+                            </li>
+                         ))}
+                      </ul>
+                   </div>
                 )}
               </div>
-
-              {/* Access Note */}
-              {project.note && (
-                <div style={{
-                  marginTop: '20px',
-                  padding: '12px 16px',
-                  backgroundColor: 'rgba(245, 158, 11, 0.1)',
-                  borderLeft: '3px solid #f59e0b',
-                  borderRadius: '4px'
-                }}>
-                  <p style={{
-                    color: '#fbbf24',
-                    fontSize: '13px',
-                    margin: '0',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
-                  }}>
-                    <span>🔒</span>
-                    <span>{project.note}</span>
-                  </p>
-                </div>
-              )}
             </div>
-          </div>
-        </div>
-      </div>
-    </>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 
   return createPortal(modalContent, document.body);
 };
+
+// Helper Component for Metadata
+const MetaItem = ({ label, value, isStatus }) => (
+  <div>
+    <span className="text-[9px] font-mono text-gray-600 uppercase block mb-1">{label}</span>
+    <span className={`text-sm font-bold uppercase ${isStatus ? 'text-green-500' : 'text-white'}`}>
+      {value || 'N/A'}
+    </span>
+  </div>
+);
 
 export default ProjectModal;

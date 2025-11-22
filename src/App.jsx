@@ -66,7 +66,7 @@ const App = () => {
         </div>
         <CustomCursor />
         <Navbar onThemeToggle={toggleTheme} />
-        <SplitScreen>
+        <>
           <Hero />
           <About />
           <Projects />
@@ -74,7 +74,7 @@ const App = () => {
           <WorkExperience />
           <Contact />
           <Footer />
-        </SplitScreen>
+        </>
       </main>
     </AnimatePresence>
   );

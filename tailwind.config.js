@@ -6,6 +6,8 @@ export default {
       fontFamily: {
         'space-grotesk': ['Space Grotesk', 'sans-serif'],
         'generalsans': ['General Sans', 'sans-serif'],
+        'sans': ['Space Grotesk', 'sans-serif'],
+        'mono': ['JetBrains Mono', 'Fira Code', 'monospace'],
       },
       colors: {
         primary: {

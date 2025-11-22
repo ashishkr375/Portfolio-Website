@@ -54,6 +54,20 @@
   }
 }
 
+@keyframes scanline {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(200px); opacity: 0; }
+}
+.animate-scanline {
+  animation: scanline 1.5s linear infinite;
+}
+@keyframes scan-down {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(300px); }
+}
+.animate-scan-down {
+  animation: scan-down 3s linear infinite;
+}
 @layer base {
   body {
     @apply bg-dark-100 font-space-grotesk;
